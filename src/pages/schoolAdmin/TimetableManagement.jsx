@@ -70,7 +70,7 @@ function Skeleton({ className = "", style = {} }) {
 
 function TimetableSkeleton() {
     return (
-        <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12 max-w-7xl mx-auto w-full animate-[fadeIn_0.25s_ease]">
             <div>
                 <Skeleton style={{ width: 220, height: 28 }} />
                 <Skeleton style={{ width: 340, height: 16, marginTop: 8 }} />
@@ -88,6 +88,14 @@ function TimetableSkeleton() {
             <div className="rounded-xl border border-outline-variant/10">
                 <Skeleton style={{ width: "100%", height: 420 }} />
             </div>
+        </div>
+    );
+}
+
+function GridSkeleton() {
+    return (
+        <div className="p-4 animate-[fadeIn_0.2s_ease]">
+            <Skeleton style={{ width: "100%", height: 360 }} />
         </div>
     );
 }
@@ -118,6 +126,57 @@ function Toast({ message, tone = "default", onDismiss }) {
         <div className={`fixed bottom-6 right-6 z-[60] flex items-center gap-2 px-4 py-3 rounded-xl border shadow-lg text-sm font-semibold animate-[fadeIn_0.2s_ease] ${toneStyles[tone]}`}>
             <span className="material-symbols-outlined text-base">{toneIcon[tone]}</span>
             {message}
+        </div>
+    );
+}
+
+// ── In-app confirm dialog (replaces window.confirm) ──
+function ConfirmDialog({
+    title = "Are you sure?",
+    message,
+    confirmLabel = "Confirm",
+    cancelLabel = "Cancel",
+    tone = "danger",
+    busy = false,
+    onConfirm,
+    onCancel,
+}) {
+    const toneBtn =
+        tone === "danger"
+            ? "bg-red-600 hover:bg-red-700"
+            : "bg-primary hover:bg-primary/90";
+    return (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-[fadeIn_0.15s_ease]">
+            <div className="bg-surface-container-lowest rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-outline-variant/10">
+                <div className="flex items-start gap-3">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${tone === "danger" ? "bg-red-50 text-red-600" : "bg-primary/10 text-primary"}`}>
+                        <span className="material-symbols-outlined text-lg">
+                            {tone === "danger" ? "warning" : "help"}
+                        </span>
+                    </div>
+                    <div className="min-w-0">
+                        <h3 className="text-sm font-headline font-bold text-on-surface">{title}</h3>
+                        <p className="text-xs text-on-surface-variant mt-1">{message}</p>
+                    </div>
+                </div>
+                <div className="flex gap-2 pt-4 mt-4 border-t border-outline-variant/10">
+                    <button
+                        onClick={onConfirm}
+                        disabled={busy}
+                        className={`px-4 py-2 text-white rounded-lg text-sm font-bold disabled:opacity-70 transition-colors flex items-center gap-2 ${toneBtn}`}
+                    >
+                        {busy && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+                        {confirmLabel}
+                    </button>
+                    <button
+                        onClick={onCancel}
+                        disabled={busy}
+                        className="px-4 py-2 border border-outline-variant/20 text-on-surface-variant rounded-lg text-sm font-bold hover:bg-surface-container-high transition-colors disabled:opacity-70"
+                    >
+                        {cancelLabel}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
@@ -502,6 +561,7 @@ function EntryModal({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [showAllTeachers, setShowAllTeachers] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
 
     const effectiveClassLevel = sectionClassLevelId || classLevelId;
 
@@ -626,7 +686,6 @@ function EntryModal({
     };
 
     const handleDelete = async () => {
-        if (!window.confirm("Remove this timetable entry?")) return;
         setSaving(true);
         try {
             await timetableApi.deleteTimetableEntry(entry.id);
@@ -635,6 +694,7 @@ function EntryModal({
         } catch (err) {
             setError("Failed to delete entry.");
             setSaving(false);
+            setConfirmingDelete(false);
         }
     };
 
@@ -661,104 +721,132 @@ function EntryModal({
 
                 {error && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">{error}</p>}
 
-                <div className="space-y-3">
-                    <Field label="Subject">
-                        <select value={subject} onChange={(e) => setSubject(e.target.value)} className={inputCls}>
-                            <option value="">Select subject</option>
-                            {subjects.map((s) => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                        </select>
-                    </Field>
-                    <Field label="Teacher">
-                        <select
-                            value={teacher}
-                            onChange={(e) => setTeacher(e.target.value)}
-                            disabled={!subject || teacherAssignmentsLoading}
-                            className={`${inputCls} ${!subject || teacherAssignmentsLoading ? "opacity-60 cursor-not-allowed" : ""}`}
-                        >
-                            <option value="">
-                                {!subject
-                                    ? "Select a subject first"
-                                    : teacherAssignmentsLoading
-                                        ? "Loading teachers…"
-                                        : "Select teacher"}
-                            </option>
-                            {teacherOptions.map((t) => (
-                                <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
-                            ))}
-                        </select>
-                        {subject && !teacherAssignmentsLoading && (
-                            <p className="text-2xs mt-1">
-                                {teacherAssignmentsError ? (
-                                    <span className="text-amber-600">
-                                        Couldn't verify subject assignments — showing all teachers.
-                                    </span>
-                                ) : noAssignedTeachers && !showAllTeachers ? (
-                                    <span className="text-amber-600">
-                                        No teacher is currently assigned to teach this subject.{" "}
-                                        <button type="button" onClick={() => setShowAllTeachers(true)} className="underline font-bold">
-                                            Show all teachers
-                                        </button>
-                                    </span>
-                                ) : showAllTeachers ? (
-                                    <span className="text-on-surface-variant">
-                                        Showing all teachers.{" "}
-                                        <button type="button" onClick={() => setShowAllTeachers(false)} className="underline font-bold">
-                                            Show only assigned
-                                        </button>
-                                    </span>
-                                ) : (
-                                    <span className="text-on-surface-variant">
-                                        {filteredTeachers.length} teacher{filteredTeachers.length === 1 ? "" : "s"} assigned to this subject.{" "}
-                                        <button type="button" onClick={() => setShowAllTeachers(true)} className="underline font-bold">
-                                            Show all
-                                        </button>
-                                    </span>
-                                )}
+                {confirmingDelete ? (
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex flex-col gap-3">
+                        <div className="flex items-start gap-2.5">
+                            <span className="material-symbols-outlined text-red-600 text-lg mt-0.5">warning</span>
+                            <p className="text-xs text-red-800 font-medium">
+                                Remove this timetable entry? This can't be undone.
                             </p>
-                        )}
-                    </Field>
-                    <div className="grid grid-cols-2 gap-3">
-                        <Field label="Room Number">
-                            <input type="text" value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} className={inputCls} placeholder="e.g. 201" />
-                        </Field>
-                    </div>
-                    <Field label="Notes">
-                        <textarea
-                            rows="2"
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            className={`${inputCls} resize-none`}
-                            placeholder="Optional — e.g. Lab session"
-                        />
-                    </Field>
-
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-outline-variant/10">
-                        <button
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 disabled:opacity-70 transition-colors"
-                        >
-                            {saving ? "Saving..." : "Save"}
-                        </button>
-                        {mode === "edit" && (
+                        </div>
+                        <div className="flex gap-2">
                             <button
                                 onClick={handleDelete}
                                 disabled={saving}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 disabled:opacity-70 transition-colors"
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 disabled:opacity-70 transition-colors flex items-center gap-2"
                             >
-                                Remove
+                                {saving && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+                                {saving ? "Removing..." : "Yes, remove"}
                             </button>
-                        )}
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 border border-outline-variant/20 text-on-surface-variant rounded-lg text-sm font-bold hover:bg-surface-container-high transition-colors"
-                        >
-                            Cancel
-                        </button>
+                            <button
+                                onClick={() => setConfirmingDelete(false)}
+                                disabled={saving}
+                                className="px-4 py-2 border border-outline-variant/20 text-on-surface-variant rounded-lg text-sm font-bold hover:bg-surface-container-high transition-colors disabled:opacity-70"
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="space-y-3">
+                        <Field label="Subject">
+                            <select value={subject} onChange={(e) => setSubject(e.target.value)} className={inputCls}>
+                                <option value="">Select subject</option>
+                                {subjects.map((s) => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                        </Field>
+                        <Field label="Teacher">
+                            <select
+                                value={teacher}
+                                onChange={(e) => setTeacher(e.target.value)}
+                                disabled={!subject || teacherAssignmentsLoading}
+                                className={`${inputCls} ${!subject || teacherAssignmentsLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+                            >
+                                <option value="">
+                                    {!subject
+                                        ? "Select a subject first"
+                                        : teacherAssignmentsLoading
+                                            ? "Loading teachers…"
+                                            : "Select teacher"}
+                                </option>
+                                {teacherOptions.map((t) => (
+                                    <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
+                                ))}
+                            </select>
+                            {subject && !teacherAssignmentsLoading && (
+                                <p className="text-2xs mt-1">
+                                    {teacherAssignmentsError ? (
+                                        <span className="text-amber-600">
+                                            Couldn't verify subject assignments — showing all teachers.
+                                        </span>
+                                    ) : noAssignedTeachers && !showAllTeachers ? (
+                                        <span className="text-amber-600">
+                                            No teacher is currently assigned to teach this subject.{" "}
+                                            <button type="button" onClick={() => setShowAllTeachers(true)} className="underline font-bold">
+                                                Show all teachers
+                                            </button>
+                                        </span>
+                                    ) : showAllTeachers ? (
+                                        <span className="text-on-surface-variant">
+                                            Showing all teachers.{" "}
+                                            <button type="button" onClick={() => setShowAllTeachers(false)} className="underline font-bold">
+                                                Show only assigned
+                                            </button>
+                                        </span>
+                                    ) : (
+                                        <span className="text-on-surface-variant">
+                                            {filteredTeachers.length} teacher{filteredTeachers.length === 1 ? "" : "s"} assigned to this subject.{" "}
+                                            <button type="button" onClick={() => setShowAllTeachers(true)} className="underline font-bold">
+                                                Show all
+                                            </button>
+                                        </span>
+                                    )}
+                                </p>
+                            )}
+                        </Field>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Field label="Room Number">
+                                <input type="text" value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} className={inputCls} placeholder="e.g. 201" />
+                            </Field>
+                        </div>
+                        <Field label="Notes">
+                            <textarea
+                                rows="2"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                className={`${inputCls} resize-none`}
+                                placeholder="Optional — e.g. Lab session"
+                            />
+                        </Field>
+
+                        <div className="flex flex-wrap gap-2 pt-2 border-t border-outline-variant/10">
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 disabled:opacity-70 transition-colors"
+                            >
+                                {saving ? "Saving..." : "Save"}
+                            </button>
+                            {mode === "edit" && (
+                                <button
+                                    onClick={() => setConfirmingDelete(true)}
+                                    disabled={saving}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 disabled:opacity-70 transition-colors"
+                                >
+                                    Remove
+                                </button>
+                            )}
+                            <button
+                                onClick={onClose}
+                                className="px-4 py-2 border border-outline-variant/20 text-on-surface-variant rounded-lg text-sm font-bold hover:bg-surface-container-high transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -899,6 +987,7 @@ export default function TimetableManagement() {
     const [addingSlot, setAddingSlot] = useState(null);
     const [deletingSlotId, setDeletingSlotId] = useState(null);
     const [toast, setToast] = useState(null);
+    const [confirmDialog, setConfirmDialog] = useState(null);
 
     const notify = (message, tone = "default") => setToast({ message, tone });
 
@@ -979,6 +1068,7 @@ export default function TimetableManagement() {
                 setSections(filtered);
             } catch (err) {
                 console.error("Sections fetch error:", err);
+                notify("Failed to load sections for the selected class.", "error");
             }
         })();
         setSectionId("");
@@ -1054,24 +1144,36 @@ export default function TimetableManagement() {
         }
     };
 
-    const handleDeleteSlot = async (slot, hasEntry) => {
-        if (hasEntry) {
-            notify("Remove the assigned subject/teacher from this period first, then delete the slot.", "error");
-            return;
-        }
-        if (!window.confirm(`Delete Period ${slot.period_number} on ${slot.day} (${fmtTime(slot.start_time)}–${fmtTime(slot.end_time)})? This removes the slot for every section, not just this one.`)) {
-            return;
-        }
+    const performDeleteSlot = async (slot) => {
+        setConfirmDialog((c) => (c ? { ...c, busy: true } : c));
         setDeletingSlotId(slot.id);
         try {
             await timetableApi.deleteTimeSlot(slot.id);
             notify(`Period ${slot.period_number} removed from ${slot.day}.`, "success");
+            setConfirmDialog(null);
             await refreshGrid();
         } catch (err) {
             notify(err?.response?.data?.detail || "Failed to delete slot.", "error");
+            setConfirmDialog(null);
         } finally {
             setDeletingSlotId(null);
         }
+    };
+
+    const handleDeleteSlot = (slot, hasEntry) => {
+        if (hasEntry) {
+            notify("Remove the assigned subject/teacher from this period first, then delete the slot.", "error");
+            return;
+        }
+        setConfirmDialog({
+            title: "Delete this period slot?",
+            message: `Delete Period ${slot.period_number} on ${slot.day} (${fmtTime(slot.start_time)}–${fmtTime(slot.end_time)})? This removes the slot for every section, not just this one.`,
+            confirmLabel: "Delete",
+            tone: "danger",
+            busy: false,
+            onConfirm: () => performDeleteSlot(slot),
+            onCancel: () => setConfirmDialog(null),
+        });
     };
 
     const periodNumbers = useMemo(() => {
@@ -1193,6 +1295,14 @@ export default function TimetableManagement() {
             </SchoolLayout>
         );
     }
+
+    // Show the full skeleton only when we truly have no grid data yet (first
+    // fetch for this year/section). On subsequent refreshes (after a save,
+    // delete, or filter change) we keep the existing grid visible and dim it
+    // with a light overlay instead of unmounting it — avoids the jarring
+    // flash/flicker of swapping the whole table for a skeleton each time.
+    const showFullGridSkeleton = gridLoading && timeSlots.length === 0;
+    const showDimOverlay = gridLoading && timeSlots.length > 0;
 
     return (
         <SchoolLayout title="Timetable">
@@ -1320,15 +1430,15 @@ export default function TimetableManagement() {
                     </p>
                 )}
 
-                <div className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm">
+                <div className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm relative">
                     {!academicYearId || !sectionId ? (
                         <EmptyState
                             icon="calendar_month"
                             title="Select an academic year, class, and section"
                             subtitle="The weekly timetable grid will appear here once a section is selected."
                         />
-                    ) : gridLoading ? (
-                        <div className="p-4"><Skeleton style={{ width: "100%", height: 360 }} /></div>
+                    ) : showFullGridSkeleton ? (
+                        <GridSkeleton />
                     ) : timeSlots.length === 0 ? (
                         <EmptyState
                             icon="event_busy"
@@ -1350,8 +1460,16 @@ export default function TimetableManagement() {
                             }
                         />
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                        <div className="overflow-x-auto relative">
+                            {showDimOverlay && (
+                                <div className="absolute inset-0 z-20 bg-surface-container-lowest/50 backdrop-blur-[1px] flex items-center justify-center transition-opacity duration-200 animate-[fadeIn_0.15s_ease]">
+                                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant/10 shadow-sm">
+                                        <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                        <span className="text-xs font-bold text-on-surface-variant">Updating…</span>
+                                    </div>
+                                </div>
+                            )}
+                            <table className={`w-full text-left border-collapse transition-opacity duration-200 ${showDimOverlay ? "opacity-50" : "opacity-100"}`}>
                                 <thead className="bg-surface-container-high/30 text-xs font-headline font-bold uppercase tracking-wider text-on-surface-variant border-b border-outline-variant/10">
                                     <tr>
                                         <th className="px-3 py-3 sticky left-0 z-10 bg-surface-container-high/95 backdrop-blur">Period</th>
@@ -1552,6 +1670,18 @@ export default function TimetableManagement() {
                         refreshGrid();
                         if (msg) notify(msg, "success");
                     }}
+                />
+            )}
+
+            {confirmDialog && (
+                <ConfirmDialog
+                    title={confirmDialog.title}
+                    message={confirmDialog.message}
+                    confirmLabel={confirmDialog.confirmLabel}
+                    tone={confirmDialog.tone}
+                    busy={confirmDialog.busy}
+                    onConfirm={confirmDialog.onConfirm}
+                    onCancel={confirmDialog.onCancel}
                 />
             )}
 

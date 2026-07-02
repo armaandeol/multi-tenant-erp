@@ -24,6 +24,12 @@ export const navItems = [
   },
 
   {
+    label: "Timetable",
+    path: "/teacher/timetable",
+    icon: "calendar_month",
+  },
+  
+  {
     label: "Grades",
     path: "/teacher/grades",
     icon: "grading",

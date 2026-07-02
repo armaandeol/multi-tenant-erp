@@ -260,15 +260,14 @@ export default function Students() {
   // ── Full‑page skeleton while loading ──
   if (loading) {
     return (
-      <SchoolLayout>
-        <StudentsSkeleton />
+      <SchoolLayout title="Students">        <StudentsSkeleton />
       </SchoolLayout>
     );
   }
 
   // ── Main render ──
   return (
-    <SchoolLayout>
+    <SchoolLayout title="Students">
       <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12">
 
         {/* Responsive Header Block */}

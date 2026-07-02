@@ -154,7 +154,7 @@ export default function AcademicYears() {
   // ── Full‑page skeleton while loading ──
   if (loading) {
     return (
-      <SchoolLayout>
+      <SchoolLayout title="Academic Years">
         <AcademicYearsSkeleton />
       </SchoolLayout>
     );
@@ -162,7 +162,7 @@ export default function AcademicYears() {
 
   // ── Main render ──
   return (
-    <SchoolLayout>
+    <SchoolLayout title="Academic Years">
       <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12">
 
         {/* Header */}

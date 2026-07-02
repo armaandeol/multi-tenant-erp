@@ -232,7 +232,7 @@ export default function ParentStudentMapping() {
   // ── Full‑page skeleton while loading ──
   if (loading) {
     return (
-      <SchoolLayout>
+      <SchoolLayout title="Parent-Student Mapping">
         <MappingSkeleton />
       </SchoolLayout>
     );
@@ -240,7 +240,7 @@ export default function ParentStudentMapping() {
 
   // ── Main render ──
   return (
-    <SchoolLayout>
+    <SchoolLayout title="Parent-Student Mapping">
       <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12">
 
         {/* Responsive Header Block */}

@@ -192,7 +192,7 @@ export default function Settings() {
   // Skeleton loading
   if (loading) {
     return (
-      <SchoolLayout key={`layout-${renderKey}`}>
+      <SchoolLayout key={`layout-${renderKey}`} title="Settings">
         <div className="px-4 md:px-8 pt-4 pb-12">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
@@ -232,18 +232,17 @@ export default function Settings() {
   ];
 
   return (
-    <SchoolLayout key={`layout-${renderKey}`}>
+    <SchoolLayout key={`layout-${renderKey}`} title="Settings">
       <div className="px-4 md:px-8 pt-4 pb-12 animate-in fade-in duration-300" key={`content-${renderKey}`}>
 
         {/* Toast Notification */}
         {toast && (
-          <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transition-all duration-300 ${
-            toast.type === "success"
-              ? "bg-success text-white"
-              : toast.type === "error"
+          <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transition-all duration-300 ${toast.type === "success"
+            ? "bg-success text-white"
+            : toast.type === "error"
               ? "bg-error text-white"
               : "bg-surface-container-high text-on-surface"
-          }`}>
+            }`}>
             <span className="material-symbols-outlined text-base">
               {toast.type === "success" ? "check_circle" : toast.type === "error" ? "error" : "info"}
             </span>

@@ -207,24 +207,24 @@ export default function Parents() {
 
   // ── Filters ──
   const filteredParents = useMemo(() => {
-      return allParents.filter((p) => {
-        if(statusFilter === "ACTIVE" && p.is_archived) return false;
-        if(statusFilter === "ARCHIVED" && !p.is_archived) return false;
+    return allParents.filter((p) => {
+      if (statusFilter === "ACTIVE" && p.is_archived) return false;
+      if (statusFilter === "ARCHIVED" && !p.is_archived) return false;
 
-        if(debouncedSearch){
-          const q = debouncedSearch.toLocaleLowerCase();
-          const fName = p.first_name || p.user?.first_name || "";
-          const lName = p.last_name || p.user?.last_name || "";
-          const email = p.email || p.user?.email || "";
-          const phone = p.phone_number || p.user?.phone_number || "";
+      if (debouncedSearch) {
+        const q = debouncedSearch.toLocaleLowerCase();
+        const fName = p.first_name || p.user?.first_name || "";
+        const lName = p.last_name || p.user?.last_name || "";
+        const email = p.email || p.user?.email || "";
+        const phone = p.phone_number || p.user?.phone_number || "";
 
-          const haystack = `${fName} ${lName} ${email} ${phone}`.toLocaleLowerCase();
+        const haystack = `${fName} ${lName} ${email} ${phone}`.toLocaleLowerCase();
 
-          if(!haystack.includes(q)) return false;
-        }
+        if (!haystack.includes(q)) return false;
+      }
 
-        return true;
-      })
+      return true;
+    })
   }, [allParents, debouncedSearch, statusFilter]);
 
   // Stats
@@ -259,7 +259,7 @@ export default function Parents() {
   // ── Skeleton ──
   if (loading) {
     return (
-      <SchoolLayout>
+      <SchoolLayout title="Parents">
         <ParentsSkeleton />
       </SchoolLayout>
     );
@@ -267,7 +267,7 @@ export default function Parents() {
 
   // ── Render ──
   return (
-    <SchoolLayout>
+    <SchoolLayout title="Parents">
       <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12">
 
         {/* Header */}
@@ -448,7 +448,7 @@ export default function Parents() {
                 </div>
                 <span>Showing {rangeStart}-{rangeEnd} of {totalFiltered}</span>
               </div>
-              
+
               <div className="flex items-center justify-between w-full sm:w-auto gap-3">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}

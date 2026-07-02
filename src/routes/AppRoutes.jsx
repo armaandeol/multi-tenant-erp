@@ -111,6 +111,7 @@ import TeacherProfileManagement from "../pages/teacher/TeacherProfileManagement"
 import TeacherSystemSettings from "../pages/teacher/TeacherSystemSettings";
 import TeacherCirculars from "../pages/teacher/Circulars";
 import TeacherLeaveDashboard from '../pages/teacher/TeacherLeaveDashboard';
+import TeacherTimetable from "../pages/teacher/TeacherTimetable";
 
 /* PARENT PAGES */
 import ParentDashboard from "../pages/parent/ParentDashboard";
@@ -433,6 +434,7 @@ function AppRoutes() {
         <Route path="/teacher/notifications" element={<TeacherNotificationsHub />} />
         <Route path='/teacher/leave-management' element={<TeacherLeaveDashboard />} />
         <Route path="/teacher/circulars" element={<TeacherCirculars />} />
+        <Route path="/teacher/timetable" element={<TeacherTimetable />} />
 
         {/* ================= PARENT ================= */}
         <Route path="/parent" element={<ParentProvider><ParentDashboard /></ParentProvider>} />

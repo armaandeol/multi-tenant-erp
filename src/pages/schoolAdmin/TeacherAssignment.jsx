@@ -254,7 +254,7 @@ export default function TeacherAssignment() {
   // ── Full‑page skeleton while loading ──
   if (loading) {
     return (
-      <SchoolLayout>
+      <SchoolLayout title="Teacher Assignment">
         <TeacherAssignmentSkeleton />
       </SchoolLayout>
     );
@@ -262,7 +262,7 @@ export default function TeacherAssignment() {
 
   // ── Main render ──
   return (
-    <SchoolLayout>
+    <SchoolLayout title="Teacher Assignment">
       <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12">
 
         {/* Responsive Header Block */}

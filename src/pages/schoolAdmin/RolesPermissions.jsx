@@ -164,8 +164,8 @@ export default function RolesPermissions() {
 
   // Reset page when search or page size changes
   useEffect(() => { setCurrentPage(1); }, [debouncedSearch, pageSize]);
-  
- // Fetch roles when search changes
+
+  // Fetch roles when search changes
   useEffect(() => {
     fetchAllRoles(debouncedSearch);
   }, [debouncedSearch]);
@@ -221,7 +221,7 @@ export default function RolesPermissions() {
   // ── Full‑page skeleton while loading ──
   if (loading) {
     return (
-      <SchoolLayout>
+      <SchoolLayout title="Roles & Permissions">
         <RolesPermissionsSkeleton />
       </SchoolLayout>
     );
@@ -229,7 +229,7 @@ export default function RolesPermissions() {
 
   // ── Main render ──
   return (
-    <SchoolLayout>
+    <SchoolLayout title="Roles & Permissions">
       <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12">
 
         {/* Responsive Header Block */}

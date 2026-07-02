@@ -207,23 +207,23 @@ export default function Teachers() {
 
   const filteredTeachers = useMemo(() => {
     return allTeachers.filter((s) => {
-      if(statusFilter === "ACTIVE" && s.is_archived) return false;
-      if(statusFilter === "ARCHIVED" && !s.is_archived) return false;
+      if (statusFilter === "ACTIVE" && s.is_archived) return false;
+      if (statusFilter === "ARCHIVED" && !s.is_archived) return false;
 
-      if(debouncedSearch){
+      if (debouncedSearch) {
         const q = debouncedSearch.toLocaleLowerCase();
         const fName = s.first_name || s.user?.first_name || "";
         const lName = s.last_name || s.user?.last_name || "";
         const email = s.email || s.user?.email || "";
         const employeeId = s.employee_id || s.user?.employee_id || "";
         const haystack = `${fName} ${lName} ${email} ${employeeId}`.toLocaleLowerCase();
-        if(!haystack.includes(q)) return false;
+        if (!haystack.includes(q)) return false;
       }
 
       return true;
     })
   }, [allTeachers, statusFilter, debouncedSearch])
-  
+
 
   // Stats (always reflect the full directory, unaffected by the status filter)
   const totalTeachers = allTeachers.length;
@@ -253,7 +253,7 @@ export default function Teachers() {
   // ── Full‑page skeleton while loading ──
   if (loading) {
     return (
-      <SchoolLayout>
+      <SchoolLayout title="Teachers">
         <TeachersSkeleton />
       </SchoolLayout>
     );
@@ -261,7 +261,7 @@ export default function Teachers() {
 
   // ── Main render ──
   return (
-    <SchoolLayout>
+    <SchoolLayout title="Teachers">
       <div className="flex flex-col gap-4 px-4 md:px-8 pt-4 pb-12">
 
         {/* Header */}
@@ -405,7 +405,7 @@ export default function Teachers() {
           {/* Pagination */}
           {totalTeachers > 0 && (
             <div className="p-4 flex flex-col sm:flex-row gap-4 justify-between items-center border-t border-outline-variant/10 bg-surface-container-high/30">
-              
+
               {/* Left Side: Row Selection & Status Display */}
               <div className="flex items-center justify-between w-full sm:w-auto gap-2 text-xs font-body text-on-surface-variant">
                 <div className="flex items-center gap-2">
